@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 
 namespace Client
 {
     class IpScanner
     {
+        protected object Locker = new object();
         public List<string> Ip; 
 
         public IpScanner()
@@ -18,26 +21,29 @@ namespace Client
             try
             {
                 Ping P = new Ping();
-                PingReply Status = P.Send(host, 1);
+                PingReply Status = P.Send(host);
                 PingStatus = (Status.Status == IPStatus.Success);
             }
             catch {}
             return PingStatus;
         }
 
-        public void Scan()
+        public void Scan(object i)
         {
-            for(int i = 0; i<=0; i++)
+            string ip = "192.168.0." + i.ToString();
+            Console.WriteLine("Пингую " + ip);
+            if(GetPing(ip) && !Ip.Contains(ip))
             {
-                for(int j = 0; j<=255; j++)
+                lock (Locker)
                 {
-                    string ip = "192.168." + i.ToString() + "." + j.ToString();
-                    if(GetPing(ip) && !Ip.Contains(ip))
-                    {
-                         Ip.Add(ip);
-                    }
-                }
+                    Ip.Add(ip);
+                } 
             }
+        }
+
+        public async void AsyncScan(object i)
+        {
+            await Task.Run(() => Scan(i));
         }
 
     }

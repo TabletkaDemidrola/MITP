@@ -10,7 +10,7 @@ namespace MITP
         static int PortScan(string ip, int portBegin, int portEnd, Logger logger)
         {
             TcpListener tcpServer;
-            for (int i = 2000; i <= 2046; i++)
+            for (int i = 2001; i <= 2046; i++)
             {
                 try
                 {

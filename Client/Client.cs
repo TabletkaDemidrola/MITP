@@ -2,31 +2,58 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Client
 {
     class Client
     {
+        static Object locker = new Object();
+        static void PortScan(string ip, int port)
+        {
+            try
+            {
+                Console.WriteLine("Шлю на {0}:{1}",ip,port);
+                SendMessage(ip, port);
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Ошибка: " + ip + ":" + port.ToString());
+            }
+        }
+
         static void Main(string[] args)
         {
+            Task [] task = new Task[256];
             IpScanner ipScanner = new IpScanner();
             Console.WriteLine("Сканирую сеть...");
-            ipScanner.Scan();
+            for(int i = 0; i < 256; i++)
+            {
+                task[i] = new Task(()=> ipScanner.AsyncScan(i));
+                Thread.Sleep(300);
+                task[i].Start();
+            }
+            Task.WaitAll(task);
+
             Console.WriteLine("Закончил сканирование.");
+            
             foreach(string ip in ipScanner.Ip)
             {
-                for(int port = 2000; port <= 2046; port++)
+                task = new Task[48];
+                task[0] = new Task(() => PortScan(ip, 23));
+                task[0].Start();
+                Thread.Sleep(1000);
+                for (int port = 2000; port <= 2046; port++)
                 {
-                    try
-                    {
-                        SendMessage(ip, port);
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("Ошибка: " + ip + ":" + port.ToString());
-                    }
+                    task[port - 1999]= new Task(()=>PortScan(ip, port));
+                    Thread.Sleep(1000);
+                    task[port - 1999].Start();
                 }
+                Task.WaitAll(task);
             }
+
+            Console.WriteLine("Ну вроде как все...");
             Console.ReadLine();
         }
 
