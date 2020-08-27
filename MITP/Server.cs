@@ -49,7 +49,6 @@ namespace MITP
                 
                 while (true)
                 {
-                    
                     logger.WriteMessage($"Ожидаем соединение через порт {ipEndPoint}");
                     
                     Socket handler = sListener.Accept();

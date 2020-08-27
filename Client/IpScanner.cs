@@ -41,10 +41,5 @@ namespace Client
             }
         }
 
-        public async void AsyncScan(object i)
-        {
-            await Task.Run(() => Scan(i));
-        }
-
     }
 }
